@@ -710,7 +710,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &832575518
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -863,6 +863,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 3
+  anim: {fileID: 2082823088}
+  playerSprite: {fileID: 2082823087}
+  rb: {fileID: 1204091252}
 --- !u!54 &1204091252
 Rigidbody:
   m_ObjectHideFlags: 0
