@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerMoveState : PlayerState
 {
@@ -8,7 +9,11 @@ public class PlayerMoveState : PlayerState
     private int stepsInGrass = 0;
     private bool movingInGrass;
     private float stepTimer;
-    private const float timePerStep = .5f;
+    private int minStepsToEncounter = 3;
+    private int maxStepsToEncounter = 7;
+    private int stepsToEncounter;
+    private const float TIME_PER_STEP = .5f;
+    private const string BATTLE_SCENE_NAME = "BattleScene";
 
     public PlayerMoveState(PlayerController _player, PlayerStateMachine _stateMachine, string _animBoolName) : base(_player, _stateMachine, _animBoolName)
     {
@@ -17,6 +22,7 @@ public class PlayerMoveState : PlayerState
     public override void Enter()
     {
         base.Enter();
+        CalculateStepsToNextEncounter();
     }
 
     public override void Exit()
@@ -52,14 +58,17 @@ public class PlayerMoveState : PlayerState
         if (movingInGrass)
         {
             stepTimer += Time.fixedDeltaTime;
-            if (stepTimer >= timePerStep)
+            if (stepTimer >= TIME_PER_STEP)
             {
                 stepsInGrass++;
                 stepTimer = 0;
                 Debug.Log("Steps in grass: " + stepsInGrass);
-                if (stepsInGrass >= 5)
+                if (stepsInGrass >= stepsToEncounter)
                 {
-                    Debug.Log("Player has walked 5 steps in grass!");
+                    Debug.Log("Encounter!");
+                    stepsInGrass = 0;
+                    CalculateStepsToNextEncounter();
+                    SceneManager.LoadScene(BATTLE_SCENE_NAME);
                 }
             }
         }
@@ -68,5 +77,10 @@ public class PlayerMoveState : PlayerState
             stepsInGrass = 0;
             stepTimer = 0;
         }
+    }
+
+    private void CalculateStepsToNextEncounter()
+    {
+        stepsToEncounter = Random.Range(minStepsToEncounter, maxStepsToEncounter);
     }
 }
