@@ -5,10 +5,12 @@ using UnityEngine;
 public class EnemyManager : MonoBehaviour
 {
     [SerializeField] private EnemyInfo[] allEnemies;
-    [SerializeField] private List<Enemy> curEnemies;
+    [SerializeField] private List<Enemy> currentEnemies;
 
     private void Awake()
     {
+        GenerateEnemyByName("Slime", 10);
+        GenerateEnemyByName("Slime", 1);
         GenerateEnemyByName("Slime", 1);
     }
 
@@ -26,9 +28,14 @@ public class EnemyManager : MonoBehaviour
                 newEnemy.Strength = allEnemies[i].BaseStrength;
                 newEnemy.Initiative = allEnemies[i].BaseInitiative;
                 newEnemy.EnemyBattleVisualPrefab = allEnemies[i].EnemyBattleVisualPrefab;
-                curEnemies.Add(newEnemy);
+                currentEnemies.Add(newEnemy);
             }
         }
+    }
+
+    public List<Enemy> GetCurrentEnemies()
+    {
+        return currentEnemies;
     }
 }
 

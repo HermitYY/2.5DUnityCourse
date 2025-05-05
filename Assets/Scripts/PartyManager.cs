@@ -5,7 +5,7 @@ using UnityEngine;
 public class PartyManager : MonoBehaviour
 {
     [SerializeField] private PartyMemberInfo[] allMembers;
-    [SerializeField] private List<PartyMember> curParty;
+    [SerializeField] private List<PartyMember> currentParty;
     [SerializeField] private PartyMemberInfo defaultPartyMember;
 
     private void Awake()
@@ -29,9 +29,14 @@ public class PartyManager : MonoBehaviour
                 newPartyMember.MaxExp = 100;
                 newPartyMember.MemberBattleVisualPrefab = allMembers[i].MemberBattleVisualPrefab;
                 newPartyMember.MemberOverworldVisualPrefab = allMembers[i].MemberOverworldVisualPrefab;
-                curParty.Add(newPartyMember);
+                currentParty.Add(newPartyMember);
             }
         }
+    }
+
+    public List<PartyMember> GetCurrentPartyMembers()
+    {
+        return currentParty;
     }
 }
 

@@ -16,5 +16,5 @@ MonoBehaviour:
   BaseHealth: 1
   BaseStrength: 1
   BaseInitiative: 1
-  EnemyBattleVisualPrefab: {fileID: 0}
-  EnemyOverworldVisualPrefab: {fileID: 0}
+  EnemyBattleVisualPrefab: {fileID: 56093064437854818, guid: d3bb3997264add74da51429258ac2cd5,
+    type: 3}
