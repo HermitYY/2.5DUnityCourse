@@ -19,7 +19,7 @@ public class BattleVisuals : MonoBehaviour
     private const string IS_ATTACK_TRIGGER = "IsAttack";
     private const string IS_HIT_TRIGGER = "IsHit";
     private const string IS_DEAD_TRIGGER = "IsDead";
-    private void Start()
+    private void Awake()
     {
         animator = GetComponent<Animator>();
     }

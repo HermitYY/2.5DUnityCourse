@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Slime
   m_EditorClassIdentifier: 
   EnemyName: Slime
-  BaseHealth: 1
-  BaseStrength: 1
+  BaseHealth: 10
+  BaseStrength: 10
   BaseInitiative: 1
   EnemyBattleVisualPrefab: {fileID: 56093064437854818, guid: d3bb3997264add74da51429258ac2cd5,
     type: 3}
