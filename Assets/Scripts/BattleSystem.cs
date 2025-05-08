@@ -292,6 +292,7 @@ public class BattleSystem : MonoBehaviour
         target.BattleVisuals.PlayHitAnimation();
         target.UpdateUI();
         bottomTextPopUpText.text = String.Format(COMSTR_ATTACK_BATTLE_TIP, attacker.Name, target.Name, attacker.Strength);
+        SaveHealth();
     }
 
     private int GetRandomPartyMemberIndexInAllBattlers()
@@ -306,6 +307,14 @@ public class BattleSystem : MonoBehaviour
         return allBattlers.IndexOf(enemyBattlers[randomIndex]);
     }
 
+
+    private void SaveHealth()
+    {
+        for (int i = 0; i < playerBattlers.Count; i++)
+        {
+            _partyManager.SaveHealth(i, playerBattlers[i].CurrentHealth);
+        }
+    }
 }
 
 
