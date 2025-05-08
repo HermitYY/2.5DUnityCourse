@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine.UI;
 using System;
 using System.Runtime.CompilerServices;
+using UnityEngine.UIElements;
 
 public class BattleSystem : MonoBehaviour
 {
@@ -43,8 +44,15 @@ public class BattleSystem : MonoBehaviour
     private EnemyManager _enemyManager;
     private int _currentPlayerIndex = 0;
 
+    private const int TURN_DURATION = 1;
     private const string COMSTR_ACTION_MESSAGE = "'s Action!";
     private const string COMSTR_ATTACK_BATTLE_TIP = "{0} attacked {1} for {2} damage!";
+    private const string COMSTR_BATTLE_START = "Battle Start!";
+    private const string COMSTR_BATTLE_WON = "You won the battle!";
+    private const string COMSTR_BATTLE_LOST = "You lost the battle!";
+    private const string COMSTR_DEFEATED = "{0} defeated {1}";
+
+
 
     void Start()
     {
@@ -61,17 +69,21 @@ public class BattleSystem : MonoBehaviour
         enemySelectionMenu.SetActive(false);
         state = BattleState.Battle;
         bottomTextPopUp.SetActive(true);
-        bottomTextPopUpText.text = "Battle Start!";
+        bottomTextPopUpText.text = COMSTR_BATTLE_START;
 
         for (int i = 0; i < allBattlers.Count; i++)
         {
+            if (state != BattleState.Battle)
+            {
+                yield break;
+            }
             switch (allBattlers[i].BattleAction)
             {
                 case BattleEntities.Action.Attack:
-                    AttackAction(allBattlers[i], allBattlers[allBattlers[i].TargetIndex]);
-                    Debug.Log(allBattlers[i].Name + " attacked " + allBattlers[allBattlers[i].TargetIndex].Name + " for " + allBattlers[i].Strength + " damage!");
+                    yield return StartCoroutine(AttackRoutine(i));
                     break;
                 case BattleEntities.Action.Run:
+                    yield return StartCoroutine(EnemyAttackRoutine(i));
                     // Implement run logic here
                     break;
             }
@@ -86,6 +98,89 @@ public class BattleSystem : MonoBehaviour
 
         yield return null;
     }
+
+    private IEnumerator AttackRoutine(int i)
+    {
+        if (allBattlers[i].IsPlayer)
+        {
+            yield return StartCoroutine(PartyAttackRoutine(i));
+        }
+        else
+        {
+            yield return StartCoroutine(EnemyAttackRoutine(i));
+        }
+    }
+
+    private IEnumerator PartyAttackRoutine(int i)
+    {
+        if (allBattlers[i].IsPlayer)
+        {
+            BattleEntities attacker = allBattlers[i];
+            if (attacker.TargetIndex >= allBattlers.Count)
+            {
+                attacker.SetTarget(GetRandomEnemyIndexInAllBattlers());
+            }
+            BattleEntities target = allBattlers[attacker.TargetIndex];
+            if (target.CurrentHealth > 0)
+            {
+                AttackAction(attacker, target);
+                yield return new WaitForSeconds(TURN_DURATION);
+            }
+
+            if (target.CurrentHealth <= 0)
+            {
+                bottomTextPopUpText.text = String.Format(COMSTR_DEFEATED, target.Name, attacker.Name);
+                yield return new WaitForSeconds(TURN_DURATION);
+                enemyBattlers.Remove(target);
+                allBattlers.Remove(target);
+            }
+
+            if (enemyBattlers.Count <= 0)
+            {
+                state = BattleState.Won;
+                bottomTextPopUpText.text = COMSTR_BATTLE_WON;
+                bottomTextPopUp.SetActive(true);
+                yield return new WaitForSeconds(TURN_DURATION);
+                bottomTextPopUp.SetActive(false);
+            }
+        }
+    }
+
+    private IEnumerator EnemyAttackRoutine(int i)
+    {
+        if (!allBattlers[i].IsPlayer)
+        {
+            BattleEntities attacker = allBattlers[i];
+            attacker.SetTarget(GetRandomPartyMemberIndexInAllBattlers());
+            BattleEntities target = allBattlers[attacker.TargetIndex];
+            if (target.CurrentHealth > 0)
+            {
+                AttackAction(attacker, target);
+                yield return new WaitForSeconds(TURN_DURATION);
+            }
+
+            if (target.CurrentHealth <= 0)
+            {
+                bottomTextPopUpText.text = String.Format(COMSTR_DEFEATED, target.Name, attacker.Name);
+                yield return new WaitForSeconds(TURN_DURATION);
+                playerBattlers.Remove(target);
+                allBattlers.Remove(target);
+            }
+
+            if (playerBattlers.Count <= 0)
+            {
+                state = BattleState.Lost;
+                bottomTextPopUpText.text = COMSTR_BATTLE_LOST;
+                bottomTextPopUp.SetActive(true);
+                battleMenu.SetActive(false);
+                enemySelectionMenu.SetActive(false);
+                yield return new WaitForSeconds(TURN_DURATION);
+                bottomTextPopUp.SetActive(false);
+            }
+        }
+    }
+
+
 
     private void CreatePartyEntities()
     {
@@ -162,14 +257,29 @@ public class BattleSystem : MonoBehaviour
             _currentPlayerIndex = 0;
             enemySelectionMenu.SetActive(false);
             StartCoroutine(BattleRoutine());
-            Debug.Log("Start Battle!");
         }
         else
         {
             enemySelectionMenu.SetActive(false);
             ShowBattkeMenu();
         }
+    }
 
+    public void SelectRun()
+    {
+        BattleEntities currentPlayerEntity = playerBattlers[_currentPlayerIndex];
+        currentPlayerEntity.BattleAction = BattleEntities.Action.Run;
+        _currentPlayerIndex++;
+
+        if (_currentPlayerIndex >= playerBattlers.Count)
+        {
+            _currentPlayerIndex = 0;
+            StartCoroutine(BattleRoutine());
+        }
+        else
+        {
+            ShowBattkeMenu();
+        }
     }
 
     private void AttackAction(BattleEntities attacker, BattleEntities target)
@@ -179,6 +289,18 @@ public class BattleSystem : MonoBehaviour
         target.BattleVisuals.PlayHitAnimation();
         target.UpdateUI();
         bottomTextPopUpText.text = String.Format(COMSTR_ATTACK_BATTLE_TIP, attacker.Name, target.Name, attacker.Strength);
+    }
+
+    private int GetRandomPartyMemberIndexInAllBattlers()
+    {
+        int randomIndex = UnityEngine.Random.Range(0, playerBattlers.Count);
+        return allBattlers.IndexOf(playerBattlers[randomIndex]);
+    }
+
+    private int GetRandomEnemyIndexInAllBattlers()
+    {
+        int randomIndex = UnityEngine.Random.Range(0, enemyBattlers.Count);
+        return allBattlers.IndexOf(enemyBattlers[randomIndex]);
     }
 
 }
