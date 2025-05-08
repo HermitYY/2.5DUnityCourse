@@ -4,9 +4,24 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System;
+using System.Runtime.CompilerServices;
 
 public class BattleSystem : MonoBehaviour
 {
+    [Serializable]
+    private enum BattleState
+    {
+        Start,
+        Selection,
+        Battle,
+        Won,
+        Lost,
+        Run
+    }
+    [Header("Battle state")]
+    [SerializeField] private BattleState state;
+
+
     [Header("Spawn Points")]
     [SerializeField] private Transform[] partySpawnPoints;
     [SerializeField] private Transform[] enemySpawnPoints;
@@ -39,7 +54,37 @@ public class BattleSystem : MonoBehaviour
         CreatePartyEntities();
         CreateEnemyEntities();
         ShowBattkeMenu();
-        AttackAction(playerBattlers[0], enemyBattlers[0]);
+    }
+
+    private IEnumerator BattleRoutine()
+    {
+        enemySelectionMenu.SetActive(false);
+        state = BattleState.Battle;
+        bottomTextPopUp.SetActive(true);
+        bottomTextPopUpText.text = "Battle Start!";
+
+        for (int i = 0; i < allBattlers.Count; i++)
+        {
+            switch (allBattlers[i].BattleAction)
+            {
+                case BattleEntities.Action.Attack:
+                    AttackAction(allBattlers[i], allBattlers[allBattlers[i].TargetIndex]);
+                    Debug.Log(allBattlers[i].Name + " attacked " + allBattlers[allBattlers[i].TargetIndex].Name + " for " + allBattlers[i].Strength + " damage!");
+                    break;
+                case BattleEntities.Action.Run:
+                    // Implement run logic here
+                    break;
+            }
+        }
+
+        if (state == BattleState.Battle)
+        {
+            bottomTextPopUp.SetActive(false);
+            _currentPlayerIndex = 0;
+            ShowBattkeMenu();
+        }
+
+        yield return null;
     }
 
     private void CreatePartyEntities()
@@ -116,7 +161,7 @@ public class BattleSystem : MonoBehaviour
         {
             _currentPlayerIndex = 0;
             enemySelectionMenu.SetActive(false);
-            // StartBattle();
+            StartCoroutine(BattleRoutine());
             Debug.Log("Start Battle!");
         }
         else
