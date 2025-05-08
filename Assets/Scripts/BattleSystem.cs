@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using System;
 using System.Runtime.CompilerServices;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
 
 public class BattleSystem : MonoBehaviour
 {
@@ -45,6 +46,7 @@ public class BattleSystem : MonoBehaviour
     private int _currentPlayerIndex = 0;
 
     private const int TURN_DURATION = 1;
+    private const string COMSTR_OVERWORLD_SCENE = "OverworldScene";
     private const string COMSTR_ACTION_MESSAGE = "'s Action!";
     private const string COMSTR_ATTACK_BATTLE_TIP = "{0} attacked {1} for {2} damage!";
     private const string COMSTR_BATTLE_START = "Battle Start!";
@@ -142,6 +144,7 @@ public class BattleSystem : MonoBehaviour
                 bottomTextPopUp.SetActive(true);
                 yield return new WaitForSeconds(TURN_DURATION);
                 bottomTextPopUp.SetActive(false);
+                SceneManager.LoadScene(COMSTR_OVERWORLD_SCENE);
             }
         }
     }
