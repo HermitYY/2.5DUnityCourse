@@ -77,6 +77,8 @@ public class BattleSystem : MonoBehaviour
 
         for (int i = 0; i < allBattlers.Count; i++)
         {
+            if (state != BattleState.Battle) break;
+            if (allBattlers[i].CurrentHealth <= 0) continue;
             if (state == BattleState.Won || state == BattleState.Lost)
                 yield break;
 
@@ -91,6 +93,9 @@ public class BattleSystem : MonoBehaviour
                     break;
             }
         }
+
+        RemoveDeadBattlers();
+        SaveHealth();
 
         if (state == BattleState.Battle)
         {
@@ -123,6 +128,27 @@ public class BattleSystem : MonoBehaviour
         {
             yield return StartCoroutine(EnemyAttackRoutine(i));
         }
+
+        if (playerBattlers.Count <= 0)
+        {
+            state = BattleState.Lost;
+            bottomTextPopUpText.text = COMSTR_BATTLE_LOST;
+            bottomTextPopUp.SetActive(true);
+            battleMenu.SetActive(false);
+            enemySelectionMenu.SetActive(false);
+            yield return new WaitForSeconds(TURN_DURATION);
+            bottomTextPopUp.SetActive(false);
+        }
+
+        if (enemyBattlers.Count <= 0)
+        {
+            state = BattleState.Won;
+            bottomTextPopUpText.text = COMSTR_BATTLE_WON;
+            bottomTextPopUp.SetActive(true);
+            yield return new WaitForSeconds(TURN_DURATION);
+            bottomTextPopUp.SetActive(false);
+            SceneManager.LoadScene(COMSTR_OVERWORLD_SCENE);
+        }
     }
 
     private IEnumerator PartyAttackRoutine(int i)
@@ -130,7 +156,7 @@ public class BattleSystem : MonoBehaviour
         if (allBattlers[i].IsPlayer)
         {
             BattleEntities attacker = allBattlers[i];
-            if (attacker.TargetIndex >= allBattlers.Count)
+            if (allBattlers[attacker.TargetIndex].CurrentHealth <= 0)
             {
                 attacker.SetTarget(GetRandomEnemyIndexInAllBattlers());
             }
@@ -146,17 +172,6 @@ public class BattleSystem : MonoBehaviour
                 bottomTextPopUpText.text = String.Format(COMSTR_DEFEATED, target.Name, attacker.Name);
                 yield return new WaitForSeconds(TURN_DURATION);
                 enemyBattlers.Remove(target);
-                allBattlers.Remove(target);
-            }
-
-            if (enemyBattlers.Count <= 0)
-            {
-                state = BattleState.Won;
-                bottomTextPopUpText.text = COMSTR_BATTLE_WON;
-                bottomTextPopUp.SetActive(true);
-                yield return new WaitForSeconds(TURN_DURATION);
-                bottomTextPopUp.SetActive(false);
-                SceneManager.LoadScene(COMSTR_OVERWORLD_SCENE);
             }
         }
     }
@@ -179,18 +194,6 @@ public class BattleSystem : MonoBehaviour
                 bottomTextPopUpText.text = String.Format(COMSTR_DEFEATED, target.Name, attacker.Name);
                 yield return new WaitForSeconds(TURN_DURATION);
                 playerBattlers.Remove(target);
-                allBattlers.Remove(target);
-            }
-
-            if (playerBattlers.Count <= 0)
-            {
-                state = BattleState.Lost;
-                bottomTextPopUpText.text = COMSTR_BATTLE_LOST;
-                bottomTextPopUp.SetActive(true);
-                battleMenu.SetActive(false);
-                enemySelectionMenu.SetActive(false);
-                yield return new WaitForSeconds(TURN_DURATION);
-                bottomTextPopUp.SetActive(false);
             }
         }
     }
@@ -282,9 +285,11 @@ public class BattleSystem : MonoBehaviour
 
     public void SelectRun()
     {
-        for (int i = _currentPlayerIndex; i < playerBattlers.Count; i++)
+        for (int i = 0; i < playerBattlers.Count; i++)
         {
             playerBattlers[i].BattleAction = BattleEntities.Action.Run;
+            playerBattlers[i].Initiative = 0;
+            DetermineBattleOrder();
         }
 
         _currentPlayerIndex = 0;
@@ -298,7 +303,6 @@ public class BattleSystem : MonoBehaviour
         target.BattleVisuals.PlayHitAnimation();
         target.UpdateUI();
         bottomTextPopUpText.text = String.Format(COMSTR_ATTACK_BATTLE_TIP, attacker.Name, target.Name, attacker.Strength);
-        SaveHealth();
     }
 
     private int GetRandomPartyMemberIndexInAllBattlers()
@@ -316,17 +320,32 @@ public class BattleSystem : MonoBehaviour
 
     private void SaveHealth()
     {
+        List<(string name, int health)> healthList = new List<(string, int)>();
+
         for (int i = 0; i < playerBattlers.Count; i++)
         {
-            _partyManager.SaveHealth(i, playerBattlers[i].CurrentHealth);
+            string name = playerBattlers[i].Name;
+            int health = playerBattlers[i].CurrentHealth;
+            healthList.Add((name, health));
         }
+
+        _partyManager.SaveHealthByNameList(healthList);
     }
 
     private void DetermineBattleOrder()
     {
         allBattlers.Sort((BattleEntities1, BattleEntities2) => BattleEntities2.Initiative.CompareTo(BattleEntities1.Initiative));
-        allBattlers.Sort((BattleEntities1, BattleEntities2) => -BattleEntities1.Initiative.CompareTo(BattleEntities2.Initiative));
+    }
 
+    private void RemoveDeadBattlers()
+    {
+        for (int i = allBattlers.Count - 1; i >= 0; i--)
+        {
+            if (allBattlers[i].CurrentHealth <= 0)
+            {
+                allBattlers.RemoveAt(i);
+            }
+        }
     }
 }
 

@@ -49,19 +49,32 @@ public class PartyManager : MonoBehaviour
 
     public List<PartyMember> GetCurrentPartyMembers()
     {
-        return currentParty;
+        // 生命值大于0的才能出战
+        List<PartyMember> aliveParty = new List<PartyMember>(currentParty);
+        aliveParty.RemoveAll(member => member.CurHealth <= 0);
+        return aliveParty;
     }
 
-    public void SaveHealth(int memberIndex, int health)
+    public void SaveHealthByNameList(List<(string name, int health)> healthDataList)
     {
-        if (memberIndex < 0 || memberIndex >= currentParty.Count)
+        // 转为 Dictionary 提高效率
+        Dictionary<string, int> healthMap = new Dictionary<string, int>();
+        foreach (var data in healthDataList)
         {
-            Debug.LogError("Invalid member index: " + memberIndex);
-            return;
+            healthMap[data.name] = data.health;
         }
 
-        PartyMember member = currentParty[memberIndex];
-        member.CurHealth = health;
+        foreach (PartyMember member in currentParty)
+        {
+            if (healthMap.TryGetValue(member.MemberName, out int health))
+            {
+                member.CurHealth = health;
+            }
+            else
+            {
+                member.CurHealth = 0;
+            }
+        }
     }
 
     public void SavePosition(Vector3 position)
