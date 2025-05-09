@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   MemberName: John
   staringLevel: 5
-  BaseHealth: 100
-  BaseStrength: 5
+  BaseHealth: 10
+  BaseStrength: 10
   BaseInitiative: 5
   MemberBattleVisualPrefab: {fileID: 5042947838011783414, guid: fb736f13f82550e4aa3a0df336111548,
     type: 3}

@@ -8,7 +8,7 @@ public class PartyManager : MonoBehaviour
     [SerializeField] private List<PartyMember> currentParty;
     [SerializeField] private PartyMemberInfo defaultPartyMember;
 
-    private Vector3 PlayerPosition;
+    [SerializeField] private Vector3 PlayerPosition;
     private static PartyManager instance;
 
     private void Awake()

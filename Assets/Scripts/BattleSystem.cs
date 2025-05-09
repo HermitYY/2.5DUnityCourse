@@ -64,6 +64,7 @@ public class BattleSystem : MonoBehaviour
         CreatePartyEntities();
         CreateEnemyEntities();
         ShowBattkeMenu();
+        DetermineBattleOrder();
     }
 
     private IEnumerator BattleRoutine()
@@ -314,6 +315,13 @@ public class BattleSystem : MonoBehaviour
         {
             _partyManager.SaveHealth(i, playerBattlers[i].CurrentHealth);
         }
+    }
+
+    private void DetermineBattleOrder()
+    {
+        allBattlers.Sort((BattleEntities1, BattleEntities2) => BattleEntities2.Initiative.CompareTo(BattleEntities1.Initiative));
+        allBattlers.Sort((BattleEntities1, BattleEntities2) => -BattleEntities1.Initiative.CompareTo(BattleEntities2.Initiative));
+
     }
 }
 

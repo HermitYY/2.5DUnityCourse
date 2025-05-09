@@ -66,6 +66,7 @@ public class PlayerMoveState : PlayerState
                 if (stepsInGrass >= stepsToEncounter)
                 {
                     Debug.Log("Encounter!");
+                    player.partyManager.SavePosition(player.transform.position);
                     stepsInGrass = 0;
                     CalculateStepsToNextEncounter();
                     SceneManager.LoadScene(BATTLE_SCENE_NAME);

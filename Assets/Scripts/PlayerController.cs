@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] public SpriteRenderer playerSprite;
     [SerializeField] public LayerMask grassLayer;
     public Rigidbody rb;
+    public PartyManager partyManager;
 
     #region States
     public PlayerStateMachine stateMachine { get; private set; }
@@ -31,6 +32,11 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         stateMachine.Initialize(idleState);
+        partyManager = FindAnyObjectByType<PartyManager>();
+        if (partyManager.GetSavedPosition() != Vector3.zero)
+        {
+            transform.position = partyManager.GetSavedPosition();
+        }
     }
 
     private void Update()
@@ -38,7 +44,8 @@ public class PlayerController : MonoBehaviour
         stateMachine.currentState.Update();
     }
 
-    private void FixedUpdate() {
+    private void FixedUpdate()
+    {
         stateMachine.currentState.FixedUpdate();
     }
 }
