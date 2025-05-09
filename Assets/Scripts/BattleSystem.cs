@@ -53,6 +53,7 @@ public class BattleSystem : MonoBehaviour
     private const string COMSTR_BATTLE_WON = "You won the battle!";
     private const string COMSTR_BATTLE_LOST = "You lost the battle!";
     private const string COMSTR_DEFEATED = "{0} defeated {1}";
+    private const string COMSTR_RUN_BATTLE = "You ran away from the battle!";
 
 
 
@@ -76,18 +77,17 @@ public class BattleSystem : MonoBehaviour
 
         for (int i = 0; i < allBattlers.Count; i++)
         {
-            if (state != BattleState.Battle)
-            {
+            if (state == BattleState.Won || state == BattleState.Lost)
                 yield break;
-            }
+
+
             switch (allBattlers[i].BattleAction)
             {
                 case BattleEntities.Action.Attack:
                     yield return StartCoroutine(AttackRoutine(i));
                     break;
                 case BattleEntities.Action.Run:
-                    yield return StartCoroutine(EnemyAttackRoutine(i));
-                    // Implement run logic here
+                    state = BattleState.Run;
                     break;
             }
         }
@@ -99,6 +99,17 @@ public class BattleSystem : MonoBehaviour
             ShowBattkeMenu();
         }
 
+        if (state == BattleState.Run)
+        {
+            bottomTextPopUpText.text = COMSTR_RUN_BATTLE;
+            bottomTextPopUp.SetActive(true);
+            enemySelectionMenu.SetActive(false);
+            battleMenu.SetActive(false);
+            yield return new WaitForSeconds(TURN_DURATION);
+            bottomTextPopUp.SetActive(false);
+            SceneManager.LoadScene(COMSTR_OVERWORLD_SCENE);
+            yield break;
+        }
         yield return null;
     }
 
@@ -271,19 +282,13 @@ public class BattleSystem : MonoBehaviour
 
     public void SelectRun()
     {
-        BattleEntities currentPlayerEntity = playerBattlers[_currentPlayerIndex];
-        currentPlayerEntity.BattleAction = BattleEntities.Action.Run;
-        _currentPlayerIndex++;
+        for (int i = _currentPlayerIndex; i < playerBattlers.Count; i++)
+        {
+            playerBattlers[i].BattleAction = BattleEntities.Action.Run;
+        }
 
-        if (_currentPlayerIndex >= playerBattlers.Count)
-        {
-            _currentPlayerIndex = 0;
-            StartCoroutine(BattleRoutine());
-        }
-        else
-        {
-            ShowBattkeMenu();
-        }
+        _currentPlayerIndex = 0;
+        StartCoroutine(BattleRoutine());
     }
 
     private void AttackAction(BattleEntities attacker, BattleEntities target)
