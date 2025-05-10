@@ -19,4 +19,5 @@ MonoBehaviour:
   BaseInitiative: 5
   MemberBattleVisualPrefab: {fileID: 5042947838011783414, guid: fb736f13f82550e4aa3a0df336111548,
     type: 3}
-  MemberOverworldVisualPrefab: {fileID: 0}
+  MemberOverworldVisualPrefab: {fileID: 924975714919142708, guid: b90e532018b386d40a6635e80145b101,
+    type: 3}

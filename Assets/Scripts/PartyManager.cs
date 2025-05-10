@@ -21,7 +21,6 @@ public class PartyManager : MonoBehaviour
         {
             instance = this;
             AddMemberToPartyByName(defaultPartyMember.MemberName);
-            AddMemberToPartyByName(defaultPartyMember.MemberName);
         }
         DontDestroyOnLoad(gameObject);
     }
@@ -47,12 +46,17 @@ public class PartyManager : MonoBehaviour
         }
     }
 
-    public List<PartyMember> GetCurrentPartyMembers()
+    public List<PartyMember> GetCurrentAlivePartyMembers()
     {
         // 生命值大于0的才能出战
         List<PartyMember> aliveParty = new List<PartyMember>(currentParty);
         aliveParty.RemoveAll(member => member.CurHealth <= 0);
         return aliveParty;
+    }
+
+    public List<PartyMember> GetCurrentPartyMembers()
+    {
+        return currentParty;
     }
 
     public void SaveHealthByNameList(List<(string name, int health)> healthDataList)
